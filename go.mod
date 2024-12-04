@@ -6,6 +6,7 @@ require (
 	github.com/opensourceways/robot-framework-lib v0.1.29-alpha
 	github.com/opensourceways/server-common-lib v1.0.0
 	github.com/sirupsen/logrus v1.9.3
+	k8s.io/apimachinery v0.29.4
 )
 
 require (
@@ -14,6 +15,5 @@ require (
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/apimachinery v0.29.4 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )

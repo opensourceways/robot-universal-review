@@ -49,6 +49,10 @@ type robot struct {
 	log *logrus.Entry
 }
 
+func (bot *robot) GetConfigmap() config.Configmap {
+	return bot.cnf
+}
+
 func newRobot(c *configuration, token []byte) *robot {
 	logger := framework.NewLogger().WithField("component", component)
 	return &robot{cli: client.NewClient(token, logger), cnf: c, log: logger}

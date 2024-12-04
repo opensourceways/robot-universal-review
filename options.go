@@ -15,10 +15,11 @@ package main
 
 import (
 	"flag"
+	"os"
+
 	"github.com/opensourceways/robot-framework-lib/config"
 	"github.com/opensourceways/server-common-lib/secret"
 	"github.com/sirupsen/logrus"
-	"os"
 )
 
 type robotOptions struct {
@@ -74,11 +75,6 @@ func (o *robotOptions) gatherOptions(fs *flag.FlagSet, args ...string) (*configu
 	o.addFlags(fs)
 	_ = fs.Parse(args)
 	cnf, token := o.validateFlags()
-
-	if cnf != nil {
-		userMarkFormat = cnf.UserMarkFormat
-		placeholderCommenter = cnf.PlaceholderCommenter
-	}
 
 	return cnf, token
 }
