@@ -15,12 +15,12 @@ package main
 
 import (
 	"errors"
+
 	"github.com/opensourceways/robot-framework-lib/client"
 	"github.com/opensourceways/robot-framework-lib/config"
 	"github.com/opensourceways/robot-framework-lib/framework"
 	"github.com/opensourceways/robot-framework-lib/utils"
 	"github.com/sirupsen/logrus"
-	"regexp"
 )
 
 // iClient is an interface that defines methods for client-side interactions
@@ -36,6 +36,11 @@ type iClient interface {
 	CheckCLASignature(urlStr string) (signState string, success bool)
 	CheckIfPRCreateEvent(evt *client.GenericEvent) (yes bool)
 	CheckIfPRSourceCodeUpdateEvent(evt *client.GenericEvent) (yes bool)
+	CheckPermission(org, repo, username string) (pass, success bool)
+	GetPullRequestLabels(org, repo, number string) (result []string, success bool)
+	MergePullRequest(org, repo, number, mergeMethod string) (success bool)
+	CheckIfPRReopenEvent(evt *client.GenericEvent) (yes bool)
+	CheckIfPRLabelsUpdateEvent(evt *client.GenericEvent) (yes bool)
 }
 
 type robot struct {
@@ -54,7 +59,7 @@ func (bot *robot) NewConfig() config.Configmap {
 }
 
 func (bot *robot) RegisterEventHandler(p framework.HandlerRegister) {
-	p.RegisterPullRequestHandler(bot.handlePullRequestEvent)
+	p.RegisterPullRequestHandler(bot.handlePREvent)
 	p.RegisterPullRequestCommentHandler(bot.handlePullRequestCommentEvent)
 }
 
@@ -73,29 +78,7 @@ func (bot *robot) getConfig(cnf config.Configmap, org, repo string) (*repoConfig
 	return nil, errors.New("no config for this repo: " + org + "/" + repo)
 }
 
-const ()
-
-var (
-	// a compiled regular expression for reopening comments
-	regexpLGTMComment = regexp.MustCompile(`(?mi)^/lgtm$`)
-	// a compiled regular expression for closing comments
-	regexpApproveComment = regexp.MustCompile(`(?mi)^/approve$`)
-	userMarkFormat       = ""
-
-	// placeholderCommitter is a placeholder string for the commenter's name
-	placeholderCommenter = ""
-	// the value from configuration.CommentNoPermissionOperateIssue
-	commentCommandTrigger = ""
-	// the value from configuration.CommentIssueNeedsLinkPR
-	commentPRNoCommits = ""
-	// the value from configuration.CommentListLinkingPullRequestsFailure
-	commentAllSigned    = ""
-	commentSomeNeedSign = ""
-	// the value from configuration.CommentNoPermissionOperatePR
-	commentUpdateLabelFailed = ""
-)
-
-func (bot *robot) handlePullRequestEvent(evt *client.GenericEvent, cnf config.Configmap, logger *logrus.Entry) {
+func (bot *robot) handlePREvent(evt *client.GenericEvent, cnf config.Configmap, logger *logrus.Entry) {
 	org, repo, number := utils.GetString(evt.Org), utils.GetString(evt.Repo), utils.GetString(evt.Number)
 	repoCnf, err := bot.getConfig(cnf, org, repo)
 	// If the specified repository not match any repository  in the repoConfig list, it logs the error and returns
@@ -104,16 +87,23 @@ func (bot *robot) handlePullRequestEvent(evt *client.GenericEvent, cnf config.Co
 		return
 	}
 
-	// Checks if PR is first created or PR source code is updated
-	if !(bot.cli.CheckIfPRCreateEvent(evt) || bot.cli.CheckIfPRSourceCodeUpdateEvent(evt)) {
-		return
+	if bot.cli.CheckIfPRReopenEvent(evt) || bot.cli.CheckIfPRSourceCodeUpdateEvent(evt) {
+		if err := bot.clearLabel(evt, org, repo, number); err != nil {
+			logger.WithError(err).Warning()
+			return
+		}
 	}
-
-	//
+	if bot.cli.CheckIfPRLabelsUpdateEvent(evt) {
+		if err := bot.handleMerge(repoCnf, org, repo, number); err != nil {
+			logger.WithError(err).Warning()
+			return
+		}
+	}
 }
 
 func (bot *robot) handlePullRequestCommentEvent(evt *client.GenericEvent, cnf config.Configmap, logger *logrus.Entry) {
 	org, repo, number := utils.GetString(evt.Org), utils.GetString(evt.Repo), utils.GetString(evt.Number)
+	comment, commenter, author := utils.GetString(evt.Comment), utils.GetString(evt.Commenter), utils.GetString(evt.Author)
 	repoCnf, err := bot.getConfig(cnf, org, repo)
 	// If the specified repository not match any repository  in the repoConfig list, it logs the error and returns
 	if err != nil {
@@ -121,10 +111,25 @@ func (bot *robot) handlePullRequestCommentEvent(evt *client.GenericEvent, cnf co
 		return
 	}
 
-	// Checks if the comment is only "/lgtm /approve /check-pr /rebase [cancel] /squash [cancel]" that can be handled
-	if !regexpLGTMComment.MatchString(utils.GetString(evt.Comment)) {
-		return
-	}
+	if bot.cli.CheckIfPRLabelsUpdateEvent(evt) {
+		if err := bot.handleRebase(comment, commenter, org, repo, number); err != nil {
+			logger.WithError(err).Warning()
+		}
 
-	// TODO
+		if err := bot.handledSquash(comment, commenter, org, repo, number); err != nil {
+			logger.WithError(err).Warning()
+		}
+
+		if err := bot.handleLGTM(repoCnf, comment, commenter, author, org, repo, number); err != nil {
+			logger.WithError(err).Warning()
+		}
+
+		if err := bot.handleApprove(repoCnf, comment, commenter, author, org, repo, number); err != nil {
+			logger.WithError(err).Warning()
+		}
+
+		if err := bot.handleCheckPR(evt, repoCnf, org, repo, number); err != nil {
+			logger.WithError(err).Warning()
+		}
+	}
 }

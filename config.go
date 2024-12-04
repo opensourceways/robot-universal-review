@@ -16,6 +16,7 @@ package main
 import (
 	"errors"
 	"fmt"
+
 	"github.com/opensourceways/server-common-lib/config"
 )
 
@@ -73,10 +74,6 @@ type repoConfig struct {
 	// The default value is 1 which means the lgtm label is itself.
 	LgtmCountsRequired uint `json:"lgtm_counts_required,omitempty"`
 
-	// CheckPermissionBasedOnSigOwners means it should check the devepler's permission
-	// besed on the owners file in sig directory when the developer comment /lgtm or /approve
-	// command. The repository is 'tc' at present.
-	CheckPermissionBasedOnSigOwners bool `json:"check_permission_based_on_sig_owners,omitempty"`
 	// LabelsForMerge specifies the labels except approved and lgtm relevant labels
 	// that must be available to merge pr
 	LabelsForMerge []string `json:"labels_for_merge,omitempty"`
@@ -85,21 +82,9 @@ type repoConfig struct {
 	// even all conditions are met
 	LabelsNotAllowMerge []string `json:"labels_not_allow_merge,omitempty"`
 
-	// MissingLabelsForMerge specifies the ones which a PR must not have to be merged.
-	MissingLabelsForMerge []string `json:"missing_labels_for_merge,omitempty"`
-
 	// MergeMethod is the method to merge PR.
 	// The default method of merge. Valid options are squash and merge.
 	MergeMethod string `json:"merge_method,omitempty"`
-
-	// UnableCheckingReviewerForPR is a switch used to check whether the pr has been set reviewers when it is open.
-	UnableCheckingReviewerForPR bool `json:"unable_checking_reviewer_for_pr,omitempty"`
-
-	// FreezeFile is the freeze branch of community
-	FreezeFile []freezeFile `json:"freeze_file,omitempty"`
-
-	// BranchKeeper is used to maintain the approve label or cancel approve maintainer list
-	BranchKeeper branchKeeper `json:"branch_keeper,omitempty"`
 }
 
 type freezeFile struct {
