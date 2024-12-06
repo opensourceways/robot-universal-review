@@ -85,7 +85,7 @@ func (bot *robot) getConfig(cnf config.Configmap, org, repo string) (*repoConfig
 func (bot *robot) handlePREvent(evt *client.GenericEvent, cnf config.Configmap, logger *logrus.Entry) {
 	org, repo, number := utils.GetString(evt.Org), utils.GetString(evt.Repo), utils.GetString(evt.Number)
 	repoCnf, err := bot.getConfig(cnf, org, repo)
-	logger.Infof("handlePREvent, org: %s, repo: %s, number: %s", org, repo, number)
+	logger.Infof("============handlePREvent, org: %s, repo: %s, number: %s", org, repo, number)
 	// If the specified repository not match any repository  in the repoConfig list, it logs the error and returns
 	if err != nil {
 		logger.WithError(err).Warning()
@@ -108,7 +108,7 @@ func (bot *robot) handlePREvent(evt *client.GenericEvent, cnf config.Configmap, 
 
 func (bot *robot) handlePullRequestCommentEvent(evt *client.GenericEvent, cnf config.Configmap, logger *logrus.Entry) {
 	org, repo, number := utils.GetString(evt.Org), utils.GetString(evt.Repo), utils.GetString(evt.Number)
-	logger.Infof("handlePullRequestCommentEvent, org: %s, repo: %s, number: %s", org, repo, number)
+	logger.Infof("=================handlePullRequestCommentEvent, org: %s, repo: %s, number: %s", org, repo, number)
 	comment, commenter, author := utils.GetString(evt.Comment), utils.GetString(evt.Commenter), utils.GetString(evt.Author)
 	repoCnf, err := bot.getConfig(cnf, org, repo)
 	// If the specified repository not match any repository  in the repoConfig list, it logs the error and returns
