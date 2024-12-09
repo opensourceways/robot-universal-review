@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/sirupsen/logrus"
 )
 
 const approvedLabel = "approved"
@@ -13,6 +15,7 @@ var (
 )
 
 func (bot *robot) handleApprove(configmap *repoConfig, comment, commenter, author, org, repo, number string) error {
+	logrus.Infof("handleApprove, comment: %s, commenter: %s, author: %s, org: %s, repo: %s, number: %s", comment, commenter, author, org, repo, number)
 	if regAddApprove.MatchString(comment) {
 		return bot.AddApprove(commenter, author, org, repo, number, configmap.LgtmCountsRequired)
 	}
@@ -25,6 +28,7 @@ func (bot *robot) handleApprove(configmap *repoConfig, comment, commenter, autho
 }
 
 func (bot *robot) AddApprove(commenter, author, org, repo, number string, lgtmCounts uint) error {
+	logrus.Infof("AddApprove, commenter: %s, author: %s, org: %s, repo: %s, number: %s", commenter, author, org, repo, number)
 	if pass, ok := bot.cli.CheckPermission(org, repo, commenter); pass && ok {
 		if ok := bot.cli.AddPRLabels(org, repo, number, []string{approvedLabel}); !ok {
 			return fmt.Errorf("failed to add label on pull request")
@@ -41,6 +45,7 @@ func (bot *robot) AddApprove(commenter, author, org, repo, number string, lgtmCo
 }
 
 func (bot *robot) removeApprove(commenter, author, org, repo, number string, lgtmCounts uint) error {
+	logrus.Infof("removeApprove, commenter: %s, author: %s, org: %s, repo: %s, number: %s", commenter, author, org, repo, number)
 
 	if pass, ok := bot.cli.CheckPermission(org, repo, commenter); pass && ok {
 		bot.cli.RemovePRLabels(org, repo, number, []string{approvedLabel})

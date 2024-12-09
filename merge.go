@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -21,6 +22,7 @@ func (bot *robot) handleMerge(configmap *repoConfig, org, repo, number string) e
 	}
 
 	methodOfMerge := bot.genMergeMethod(org, repo, number)
+	logrus.Infof("handleMerge, methodOfMerge: %s, org: %s, repo: %s, number: %s", methodOfMerge, org, repo, number)
 	if ok := bot.cli.MergePullRequest(org, repo, number, methodOfMerge); !ok {
 		return fmt.Errorf("failed to merge pull request")
 	}

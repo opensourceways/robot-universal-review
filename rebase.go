@@ -2,6 +2,8 @@ package main
 
 import (
 	"regexp"
+
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -12,6 +14,7 @@ var (
 const rebaseLabel = "merge/rebase"
 
 func (bot *robot) handleRebase(comment, commenter, org, repo, number string) error {
+	logrus.Infof("handleRebase, comment: %s, commenter: %s, org: %s, repo: %s, number: %s", comment, commenter, org, repo, number)
 	if regAddRebase.MatchString(comment) {
 		return bot.addRebase(commenter, org, repo, number)
 	}
@@ -24,6 +27,7 @@ func (bot *robot) handleRebase(comment, commenter, org, repo, number string) err
 }
 
 func (bot *robot) addRebase(commenter, org, repo, number string) error {
+	logrus.Infof("addRebase, commenter: %s, org: %s, repo: %s, number: %s", commenter, org, repo, number)
 	if pass, ok := bot.cli.CheckPermission(org, repo, commenter); pass && ok {
 		label := bot.getPRLabelSet(org, repo, number)
 		if _, ok := label["merge/squash"]; ok {
@@ -38,6 +42,7 @@ func (bot *robot) addRebase(commenter, org, repo, number string) error {
 }
 
 func (bot *robot) removeRebase(commenter, org, repo, number string) error {
+	logrus.Infof("removeRebase, commenter: %s, org: %s, repo: %s, number: %s", commenter, org, repo, number)
 	if pass, ok := bot.cli.CheckPermission(org, repo, commenter); pass && ok {
 		bot.cli.RemovePRLabels(org, repo, number, []string{rebaseLabel})
 	}

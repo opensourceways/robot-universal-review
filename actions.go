@@ -7,6 +7,7 @@ import (
 
 	"github.com/opensourceways/robot-framework-lib/client"
 	"github.com/opensourceways/robot-framework-lib/utils"
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -95,6 +96,7 @@ func (bot *robot) genMergeMethod(org, repo, number string) string {
 }
 
 func (bot *robot) handleCheckPR(evt *client.GenericEvent, configmap *repoConfig, org, repo, number string) error {
+	logrus.Infof("handleCheckPR, org: %s, repo: %s, number: %s", org, repo, number)
 	comment := utils.GetString(evt.Comment)
 	if !regCheckPr.MatchString(comment) {
 		return nil

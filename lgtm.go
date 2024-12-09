@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -32,7 +33,7 @@ var (
 )
 
 func (bot *robot) handleLGTM(configmap *repoConfig, comment, commenter, author, org, repo, number string) error {
-
+	logrus.Infof("handleLGTM, comment: %s, commenter: %s, author: %s, org: %s, repo: %s, number: %s", comment, commenter, author, org, repo, number)
 	if regAddLgtm.MatchString(comment) {
 		return bot.addLGTM(commenter, author, org, repo, number, configmap.LgtmCountsRequired)
 	}
@@ -45,6 +46,7 @@ func (bot *robot) handleLGTM(configmap *repoConfig, comment, commenter, author, 
 }
 
 func (bot *robot) addLGTM(commenter, author, org, repo, number string, lgtmCounts uint) error {
+	logrus.Infof("addLGTM, commenter: %s, author: %s, org: %s, repo: %s, number: %s", commenter, author, org, repo, number)
 	if author == commenter {
 		if ok := bot.cli.CreatePRComment(org, repo, number, commentAddLGTMBySelf); !ok {
 			return fmt.Errorf("failed to comment on pull request")
@@ -67,6 +69,7 @@ func (bot *robot) addLGTM(commenter, author, org, repo, number string, lgtmCount
 }
 
 func (bot *robot) removeLGTM(commenter, author, org, repo, number string, lgtmCounts uint) error {
+	logrus.Infof("removeLGTM, commenter: %s, author: %s, org: %s, repo: %s, number: %s", commenter, author, org, repo, number)
 	if author == commenter {
 		bot.cli.RemovePRLabels(org, repo, number, getLGTMLabelsOnPR(bot.getPRLabelSet(org, repo, number)))
 	} else {
