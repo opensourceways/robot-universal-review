@@ -3,7 +3,7 @@ module github.com/opensourceways/robot-universal-review
 go 1.21
 
 require (
-	github.com/opensourceways/robot-framework-lib v0.1.29-alpha
+	github.com/opensourceways/robot-framework-lib v0.1.30-alpha
 	github.com/opensourceways/server-common-lib v1.0.0
 	github.com/sirupsen/logrus v1.9.3
 	k8s.io/apimachinery v0.29.4
