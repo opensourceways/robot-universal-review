@@ -3,7 +3,7 @@ module github.com/opensourceways/robot-universal-review
 go 1.21
 
 require (
-	github.com/opensourceways/robot-framework-lib v0.1.30-alpha
+	github.com/opensourceways/robot-framework-lib v0.1.33-alpha
 	github.com/opensourceways/server-common-lib v1.0.0
 	github.com/sirupsen/logrus v1.9.3
 	k8s.io/apimachinery v0.29.4
@@ -11,7 +11,7 @@ require (
 
 require (
 	github.com/go-resty/resty/v2 v2.11.0 // indirect
-	github.com/opensourceways/go-gitcode v0.1.17-alpha // indirect
+	github.com/opensourceways/go-gitcode v0.1.20-alpha // indirect
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
