@@ -117,6 +117,7 @@ func (bot *robot) handlePullRequestCommentEvent(evt *client.GenericEvent, cnf co
 		return
 	}
 
+	logrus.Infof("handlePullRequestCommentEvent, state: %s, action: %s, actionDetail: %s", utils.GetString(evt.State), utils.GetString(evt.Action), utils.GetString(evt.ActionDetail))
 	if bot.cli.CheckIfPRLabelsUpdateEvent(evt) {
 		if err := bot.handleRebase(comment, commenter, org, repo, number); err != nil {
 			logger.WithError(err).Warning()
