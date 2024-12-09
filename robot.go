@@ -118,25 +118,24 @@ func (bot *robot) handlePullRequestCommentEvent(evt *client.GenericEvent, cnf co
 	}
 
 	logrus.Infof("handlePullRequestCommentEvent, state: %s, action: %s, actionDetail: %s", utils.GetString(evt.State), utils.GetString(evt.Action), utils.GetString(evt.ActionDetail))
-	if bot.cli.CheckIfPRLabelsUpdateEvent(evt) {
-		if err := bot.handleRebase(comment, commenter, org, repo, number); err != nil {
-			logger.WithError(err).Warning()
-		}
-
-		if err := bot.handledSquash(comment, commenter, org, repo, number); err != nil {
-			logger.WithError(err).Warning()
-		}
-
-		if err := bot.handleLGTM(repoCnf, comment, commenter, author, org, repo, number); err != nil {
-			logger.WithError(err).Warning()
-		}
-
-		if err := bot.handleApprove(repoCnf, comment, commenter, author, org, repo, number); err != nil {
-			logger.WithError(err).Warning()
-		}
-
-		if err := bot.handleCheckPR(evt, repoCnf, org, repo, number); err != nil {
-			logger.WithError(err).Warning()
-		}
+	if err := bot.handleRebase(comment, commenter, org, repo, number); err != nil {
+		logger.WithError(err).Warning()
 	}
+
+	if err := bot.handledSquash(comment, commenter, org, repo, number); err != nil {
+		logger.WithError(err).Warning()
+	}
+
+	if err := bot.handleLGTM(repoCnf, comment, commenter, author, org, repo, number); err != nil {
+		logger.WithError(err).Warning()
+	}
+
+	if err := bot.handleApprove(repoCnf, comment, commenter, author, org, repo, number); err != nil {
+		logger.WithError(err).Warning()
+	}
+
+	if err := bot.handleCheckPR(evt, repoCnf, org, repo, number); err != nil {
+		logger.WithError(err).Warning()
+	}
+
 }

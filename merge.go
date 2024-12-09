@@ -17,6 +17,7 @@ const (
 
 func (bot *robot) handleMerge(configmap *repoConfig, org, repo, number string) error {
 	labels := bot.getPRLabelSet(org, repo, number)
+	logrus.Infof("handleMerge, labels: %v, org: %s, repo: %s, number: %s", labels, org, repo, number)
 	if err := isLabelMatched(configmap, labels); err != nil {
 		return err
 	}
