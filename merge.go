@@ -102,8 +102,9 @@ func checkLabelsLegal(configmap *repoConfig, ops []client.PullRequestOperationLo
 func isLabelLegal(ops []client.PullRequestOperationLog, label string, legalOperator string) string {
 	labelLog, ok := getLatestLog(ops, label)
 	if !ok {
-		return fmt.Sprintf("The corresponding operation log is missing. you should delete " +
-			"the label and add it again by correct way")
+		logrus.Errorf("===>labelLog is: %+v label: %s", labelLog, label)
+		return fmt.Sprintf("The corresponding operation log is missing. you should delete "+
+			"the label ** %s ** and add it again by correct way", labelLog.label)
 	}
 	if labelLog.who != legalOperator {
 		return fmt.Sprintf("%s You can't add %s by yourself, please contact the maintainers", labelLog.who, labelLog.label)
