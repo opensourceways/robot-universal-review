@@ -114,10 +114,10 @@ func isLabelLegal(ops []client.PullRequestOperationLog, label string, legalOpera
 	if !ok {
 		logrus.Errorf("=== label: %s", label)
 		return fmt.Sprintf("The corresponding operation log is missing. you should delete "+
-			"the label ** %s ** and add it again by correct way", label)
+			"the label **%s** and add it again by correct way", label)
 	}
 	if labelLog.who != legalOperator {
-		return fmt.Sprintf("%s You can't add ** %s ** by yourself, you should delete "+
+		return fmt.Sprintf("%s You can't add **%s** by yourself, you should delete "+
 			"the label and add it again by correct way", labelLog.who, labelLog.label)
 	}
 	return ""
