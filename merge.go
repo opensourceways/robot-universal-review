@@ -15,7 +15,7 @@ const (
 	msgMissingLabels      = "PR does not have these lables: %s"
 	msgInvalidLabels      = "PR should remove these labels: %s"
 	msgNotEnoughLGTMLabel = "PR needs %d lgtm labels and now gets %d"
-	ActionAddLabel        = "add_label"
+	ActionAddLabel        = "add label"
 )
 
 type labelLog struct {
@@ -138,6 +138,7 @@ func getLatestLog(ops []client.PullRequestOperationLog, label string) (labelLog,
 
 	if index >= 0 {
 		if user := ops[index].UserName; user != "" {
+			logrus.Infof("<===user add: %s %s", ops[index].Content, user)
 			return labelLog{
 				label: label,
 				t:     t,
