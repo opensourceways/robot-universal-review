@@ -102,9 +102,9 @@ func checkLabelsLegal(configmap *repoConfig, ops []client.PullRequestOperationLo
 func isLabelLegal(ops []client.PullRequestOperationLog, label string, legalOperator string) string {
 	labelLog, ok := getLatestLog(ops, label)
 	if !ok {
-		logrus.Errorf("===>labelLog is: %+v label: %s", labelLog, label)
+		logrus.Errorf("=== label: %s", label)
 		return fmt.Sprintf("The corresponding operation log is missing. you should delete "+
-			"the label ** %s ** and add it again by correct way", labelLog.label)
+			"the label ** %s ** and add it again by correct way", label)
 	}
 	if labelLog.who != legalOperator {
 		return fmt.Sprintf("%s You can't add %s by yourself, please contact the maintainers", labelLog.who, labelLog.label)
@@ -119,7 +119,7 @@ func getLatestLog(ops []client.PullRequestOperationLog, label string) (labelLog,
 	for i := range ops {
 		op := &ops[i]
 		logrus.Infof("===>op: %+v", op)
-		if op.Action != ActionAddLabel || !strings.Contains(op.Content, label) {
+		if !strings.HasPrefix(op.Content, ActionAddLabel) || !strings.Contains(op.Content, label) {
 			continue
 		}
 
