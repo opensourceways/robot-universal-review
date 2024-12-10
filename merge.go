@@ -30,7 +30,7 @@ func (bot *robot) handleMerge(configmap *repoConfig, org, repo, number string) e
 	if !ok {
 		return fmt.Errorf("failed to list pull request operation logs")
 	}
-	if err := isLabelsLegal(configmap, ops, labels); err != nil {
+	if err := checkLabelsLegal(configmap, ops, labels); err != nil {
 		return err
 	}
 	if err := isLabelMatched(configmap, labels); err != nil {
@@ -76,7 +76,7 @@ func isLabelMatched(configmap *repoConfig, labels sets.Set[string]) error {
 	return nil
 }
 
-func isLabelsLegal(configmap *repoConfig, ops []client.PullRequestOperationLog, labels sets.Set[string]) error {
+func checkLabelsLegal(configmap *repoConfig, ops []client.PullRequestOperationLog, labels sets.Set[string]) error {
 	needs := sets.New[string](approvedLabel)
 	needs.Insert(configmap.LabelsForMerge...)
 
