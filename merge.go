@@ -79,7 +79,14 @@ func isLabelMatched(configmap *repoConfig, labels sets.Set[string]) error {
 func checkLabelsLegal(configmap *repoConfig, ops []client.PullRequestOperationLog, labels sets.Set[string]) error {
 	needs := sets.New[string](approvedLabel)
 	needs.Insert(configmap.LabelsForMerge...)
-
+	if ln := configmap.LgtmCountsRequired; ln == 1 {
+		needs.Insert(lgtmLabel)
+	} else {
+		v := getLGTMLabelsOnPR(labels)
+		if n := uint(len(v)); n < ln {
+			return fmt.Errorf(msgNotEnoughLGTMLabel, ln, n)
+		}
+	}
 	legalOperator := configmap.LegalOperator
 	reason := make([]string, 0, len(labels))
 	for label := range labels {
