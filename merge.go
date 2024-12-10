@@ -117,7 +117,8 @@ func isLabelLegal(ops []client.PullRequestOperationLog, label string, legalOpera
 			"the label ** %s ** and add it again by correct way", label)
 	}
 	if labelLog.who != legalOperator {
-		return fmt.Sprintf("%s You can't add %s by yourself, please contact the maintainers", labelLog.who, labelLog.label)
+		return fmt.Sprintf("%s You can't add ** %s ** by yourself, you should delete "+
+			"the label and add it again by correct way", labelLog.who, labelLog.label)
 	}
 	return ""
 }
