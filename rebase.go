@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/url"
 	"regexp"
 
 	"github.com/sirupsen/logrus"
@@ -11,7 +12,7 @@ var (
 	regRemoveRebase = regexp.MustCompile(`(?mi)^/rebase cancel\s*$`)
 )
 
-const rebaseLabel = "merge%2Frebase"
+const rebaseLabel = "merge/rebase"
 
 func (bot *robot) handleRebase(comment, commenter, org, repo, number string) error {
 	logrus.Infof("handleRebase, comment: %s, commenter: %s, org: %s, repo: %s, number: %s", comment, commenter, org, repo, number)
@@ -44,7 +45,7 @@ func (bot *robot) addRebase(commenter, org, repo, number string) error {
 func (bot *robot) removeRebase(commenter, org, repo, number string) error {
 	logrus.Infof("removeRebase, commenter: %s, org: %s, repo: %s, number: %s", commenter, org, repo, number)
 	if pass, ok := bot.cli.CheckPermission(org, repo, commenter); pass && ok {
-		bot.cli.RemovePRLabels(org, repo, number, []string{rebaseLabel})
+		bot.cli.RemovePRLabels(org, repo, number, []string{url.QueryEscape(rebaseLabel)})
 	}
 	return nil
 }

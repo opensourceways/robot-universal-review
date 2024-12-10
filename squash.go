@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/url"
 	"regexp"
 
 	"github.com/sirupsen/logrus"
@@ -11,7 +12,7 @@ var (
 	regRemoveSquash = regexp.MustCompile(`(?mi)^/squash cancel\s*$`)
 )
 
-const squashLabel = "merge%2Fsquash"
+const squashLabel = "merge/squash"
 
 func (bot *robot) handledSquash(comment, commenter, org, repo, number string) error {
 	logrus.Infof("handledSquash, comment: %s, commenter: %s, org: %s, repo: %s, number: %s", comment, commenter, org, repo, number)
@@ -44,7 +45,7 @@ func (bot *robot) addSquash(commenter, org, repo, number string) error {
 func (bot *robot) removedSquash(commenter, org, repo, number string) error {
 	logrus.Infof("removedSquash, commenter: %s, org: %s, repo: %s, number: %s", commenter, org, repo, number)
 	if pass, ok := bot.cli.CheckPermission(org, repo, commenter); pass && ok {
-		bot.cli.RemovePRLabels(org, repo, number, []string{squashLabel})
+		bot.cli.RemovePRLabels(org, repo, number, []string{url.QueryEscape(squashLabel)})
 	}
 	return nil
 }
