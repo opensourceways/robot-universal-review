@@ -15,7 +15,6 @@ var (
 const squashLabel = "merge/squash"
 
 func (bot *robot) handledSquash(comment, commenter, org, repo, number string) error {
-	logrus.Infof("handledSquash, comment: %s, commenter: %s, org: %s, repo: %s, number: %s", comment, commenter, org, repo, number)
 	if regAddSquash.MatchString(comment) {
 		return bot.addSquash(commenter, org, repo, number)
 	}

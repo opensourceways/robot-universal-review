@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/opensourceways/robot-framework-lib/client"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -13,17 +15,29 @@ const (
 	msgMissingLabels      = "PR does not have these lables: %s"
 	msgInvalidLabels      = "PR should remove these labels: %s"
 	msgNotEnoughLGTMLabel = "PR needs %d lgtm labels and now gets %d"
+	ActionAddLabel        = "add_label"
 )
+
+type labelLog struct {
+	label string
+	who   string
+	t     time.Time
+}
 
 func (bot *robot) handleMerge(configmap *repoConfig, org, repo, number string) error {
 	labels := bot.getPRLabelSet(org, repo, number)
-	logrus.Infof("handleMerge, labels: %v, org: %s, repo: %s, number: %s", labels, org, repo, number)
+	ops, ok := bot.cli.ListPullRequestOperationLogs(org, repo, number)
+	if !ok {
+		return fmt.Errorf("failed to list pull request operation logs")
+	}
+	if err := isLabelsLegal(configmap, ops, labels); err != nil {
+		return err
+	}
 	if err := isLabelMatched(configmap, labels); err != nil {
 		return err
 	}
 
 	methodOfMerge := bot.genMergeMethod(org, repo, number)
-	logrus.Infof("handleMerge, methodOfMerge: %s, org: %s, repo: %s, number: %s", methodOfMerge, org, repo, number)
 	if ok := bot.cli.MergePullRequest(org, repo, number, methodOfMerge); !ok {
 		return fmt.Errorf("failed to merge pull request")
 	}
@@ -60,4 +74,68 @@ func isLabelMatched(configmap *repoConfig, labels sets.Set[string]) error {
 	}
 
 	return nil
+}
+
+func isLabelsLegal(configmap *repoConfig, ops []client.PullRequestOperationLog, labels sets.Set[string]) error {
+	needs := sets.New[string](approvedLabel)
+	needs.Insert(configmap.LabelsForMerge...)
+
+	legalOperator := configmap.LegalOperator
+	reason := make([]string, 0, len(labels))
+	for label := range labels {
+		if ok := needs.Has(label); ok || strings.HasPrefix(label, lgtmLabel) {
+			if s := isLabelLegal(ops, label, legalOperator); s != "" {
+				reason = append(reason, s)
+			}
+		}
+	}
+	if n := len(reason); n > 0 {
+		s := "label is "
+		if n > 1 {
+			s = "labels are "
+		}
+		return fmt.Errorf("**The following %s not ready**.\n\n%s", s, strings.Join(reason, "\n\n"))
+	}
+	return nil
+}
+
+func isLabelLegal(ops []client.PullRequestOperationLog, label string, legalOperator string) string {
+	labelLog, ok := getLatestLog(ops, label)
+	if !ok {
+		return fmt.Sprintf("The corresponding operation log is missing. you should delete " +
+			"the label and add it again by correct way")
+	}
+	if labelLog.who != legalOperator {
+		return fmt.Sprintf("%s You can't add %s by yourself, please contact the maintainers", labelLog.who, labelLog.label)
+	}
+	return ""
+}
+
+func getLatestLog(ops []client.PullRequestOperationLog, label string) (labelLog, bool) {
+	var t time.Time
+	index := -1
+
+	for i := range ops {
+		op := &ops[i]
+		logrus.Infof("===>op: %+v", op)
+		if op.Action != ActionAddLabel || !strings.Contains(op.Content, label) {
+			continue
+		}
+
+		if index < 0 || op.CreatedAt.After(t) {
+			t = op.CreatedAt
+			index = i
+		}
+	}
+
+	if index >= 0 {
+		if user := ops[index].UserName; user != "" {
+			return labelLog{
+				label: label,
+				t:     t,
+				who:   user,
+			}, true
+		}
+	}
+	return labelLog{}, false
 }

@@ -101,6 +101,9 @@ func (bot *robot) handleCheckPR(evt *client.GenericEvent, configmap *repoConfig,
 	if !regCheckPr.MatchString(comment) {
 		return nil
 	}
-
-	return bot.handleMerge(configmap, org, repo, number)
+	if err := bot.handleMerge(configmap, org, repo, number); err != nil {
+		bot.cli.CreatePRComment(org, repo, number, err.Error())
+		return err
+	}
+	return nil
 }

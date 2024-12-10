@@ -41,6 +41,7 @@ type iClient interface {
 	MergePullRequest(org, repo, number, mergeMethod string) (success bool)
 	CheckIfPRReopenEvent(evt *client.GenericEvent) (yes bool)
 	CheckIfPRLabelsUpdateEvent(evt *client.GenericEvent) (yes bool)
+	ListPullRequestOperationLogs(org, repo, number string) (result []client.PullRequestOperationLog, success bool)
 }
 
 type robot struct {
