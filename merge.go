@@ -64,6 +64,7 @@ func isLabelMatched(configmap *repoConfig, labels sets.Set[string]) error {
 		}
 	}
 
+	logrus.Infof(">===>labels: %v, needs: %v", labels, needs)
 	if v := needs.Difference(labels); v.Len() > 0 {
 		vl := v.UnsortedList()
 		var vlp []string
