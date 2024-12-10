@@ -11,7 +11,7 @@ var (
 	regRemoveSquash = regexp.MustCompile(`(?mi)^/squash cancel\s*$`)
 )
 
-const squashLabel = "merge/squash"
+const squashLabel = "merge%2Fsquash"
 
 func (bot *robot) handledSquash(comment, commenter, org, repo, number string) error {
 	logrus.Infof("handledSquash, comment: %s, commenter: %s, org: %s, repo: %s, number: %s", comment, commenter, org, repo, number)

@@ -11,7 +11,7 @@ var (
 	regRemoveRebase = regexp.MustCompile(`(?mi)^/rebase cancel\s*$`)
 )
 
-const rebaseLabel = "merge/rebase"
+const rebaseLabel = "merge%2Frebase"
 
 func (bot *robot) handleRebase(comment, commenter, org, repo, number string) error {
 	logrus.Infof("handleRebase, comment: %s, commenter: %s, org: %s, repo: %s, number: %s", comment, commenter, org, repo, number)
