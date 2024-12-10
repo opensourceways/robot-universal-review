@@ -55,10 +55,12 @@ func isLabelMatched(configmap *repoConfig, labels sets.Set[string]) error {
 	needs := sets.New[string](approvedLabel)
 	needs.Insert(configmap.LabelsForMerge...)
 
+	logrus.Infof(">===>lgtmCountsRequired: %d", configmap.LgtmCountsRequired)
 	if ln := configmap.LgtmCountsRequired; ln == 1 {
 		needs.Insert(lgtmLabel)
 	} else {
 		v := getLGTMLabelsOnPR(labels)
+		logrus.Infof(">===>v: %v, len(v)<ln: %t", uint(len(v)), uint(len(v)) < ln)
 		if n := uint(len(v)); n < ln {
 			return fmt.Errorf(msgNotEnoughLGTMLabel, ln, n)
 		}
