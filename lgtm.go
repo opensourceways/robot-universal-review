@@ -33,7 +33,6 @@ var (
 )
 
 func (bot *robot) handleLGTM(configmap *repoConfig, comment, commenter, author, org, repo, number string) error {
-	logrus.Infof("handleLGTM, comment: %s, commenter: %s, author: %s, org: %s, repo: %s, number: %s", comment, commenter, author, org, repo, number)
 	if regAddLgtm.MatchString(comment) {
 		return bot.addLGTM(commenter, author, org, repo, number, configmap.LgtmCountsRequired)
 	}
@@ -51,6 +50,7 @@ func (bot *robot) addLGTM(commenter, author, org, repo, number string, lgtmCount
 		if ok := bot.cli.CreatePRComment(org, repo, number, commentAddLGTMBySelf); !ok {
 			return fmt.Errorf("failed to comment on pull request")
 		}
+		return nil
 	}
 	if pass, ok := bot.cli.CheckPermission(org, repo, commenter); pass && ok {
 		label := genLGTMLabel(commenter, lgtmCounts)
