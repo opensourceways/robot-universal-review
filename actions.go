@@ -98,17 +98,27 @@ func (bot *robot) handleCheckPR(configmap *repoConfig, comment, commenter, org, 
 		return nil
 	}
 	if err := bot.handleMerge(configmap, org, repo, number); err != nil {
+		claYesLabel := ""
+		for _, labelForMerge := range configmap.LabelsForMerge {
+			if strings.Contains(labelForMerge, "-cla/yes") {
+				claYesLabel = labelForMerge
+				break
+			}
+		}
 		comment := fmt.Sprintf("@%s, this pr is not mergeable and the reasons are below:\n%s\n\n***lgtm***: "+
 			"A label mandatory for merging a pull request. The repository collaborators can comment '/lgtm' to "+
 			"add the label. The creator of a pull request can comment '/lgtm cancel' to remove the label, but "+
 			"cannot run the '/lgtm' command to add the label.\n***approved***: A label mandatory for merging a "+
 			"pull request. The repository collaborators can comment '/approve' to add the label and comment "+
-			"'/approve cancel' to remove the label.\n***wait_confirm***: A label for confirming pull request "+
+			"'/approve cancel' to remove the label.\n***%s***:  A label mandatory for merging a pull request. "+
+			"The author of each commit of a pull request must sign the Contributor License Agreement (CLA). "+
+			"Otherwise, the pull request will fail to be merged. After signing the CLA, the author can comment "+
+			"'/check-cla' to check the CLA status again.\n***wait_confirm***: A label for confirming pull request "+
 			"merging. A pull request with this label cannot be automatically merged. This label is added because "+
 			"members (including maintainers, committers, and repository administrators) are to be added to "+
 			"sig-info.yaml in the pull request. To remove the label, all members to be added must comment "+
 			"'/lgtm' in the pull request.",
-			commenter, err.Error())
+			commenter, err.Error(), claYesLabel)
 		bot.cli.CreatePRComment(org, repo, number, comment)
 		return err
 	}
