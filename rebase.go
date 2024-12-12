@@ -15,7 +15,6 @@ var (
 const rebaseLabel = "merge/rebase"
 
 func (bot *robot) handleRebase(comment, commenter, org, repo, number string) error {
-	logrus.Infof("handleRebase, comment: %s, commenter: %s, org: %s, repo: %s, number: %s", comment, commenter, org, repo, number)
 	if regAddRebase.MatchString(comment) {
 		return bot.addRebase(commenter, org, repo, number)
 	}

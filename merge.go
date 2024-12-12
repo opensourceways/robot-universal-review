@@ -33,8 +33,8 @@ func (bot *robot) handleMerge(configmap *repoConfig, org, repo, number string) e
 	if err := checkLabelsLegal(configmap, ops, labels); err != nil {
 		return err
 	}
-	if err := isLabelMatched(configmap, labels); err != nil {
-		return err
+	if reasons := isLabelMatched(configmap, labels); len(reasons) > 0 {
+		return fmt.Errorf(strings.Join(reasons, "\n\n"))
 	}
 
 	methodOfMerge := bot.genMergeMethod(org, repo, number)
@@ -44,56 +44,49 @@ func (bot *robot) handleMerge(configmap *repoConfig, org, repo, number string) e
 	return nil
 }
 
-func isLabelMatched(configmap *repoConfig, labels sets.Set[string]) error {
-
+func isLabelMatched(configmap *repoConfig, labels sets.Set[string]) []string {
+	var reasons []string
 	for _, l := range configmap.LabelsNotAllowMerge {
 		if labels.Has(l) {
-			return fmt.Errorf(msgInvalidLabels, l)
+			reasons = append(reasons, fmt.Sprintf(msgInvalidLabels, l))
 		}
 	}
 
 	needs := sets.New[string](approvedLabel)
 	needs.Insert(configmap.LabelsForMerge...)
 
-	logrus.Infof(">===>lgtmCountsRequired: %d", configmap.LgtmCountsRequired)
 	if ln := configmap.LgtmCountsRequired; ln == 1 {
 		needs.Insert(lgtmLabel)
 	} else {
 		v := getLGTMLabelsOnPR(labels)
-		logrus.Infof(">===>v: %v, len(v)<ln: %t", uint(len(v)), uint(len(v)) < ln)
 		if n := uint(len(v)); n < ln {
-			return fmt.Errorf(msgNotEnoughLGTMLabel, ln, n)
+			reasons = append(reasons, fmt.Sprintf(msgNotEnoughLGTMLabel, ln, n))
 		}
 	}
 
-	logrus.Infof(">===>labels: %v, needs: %v", labels, needs)
 	if v := needs.Difference(labels); v.Len() > 0 {
 		vl := v.UnsortedList()
 		var vlp []string
 		for _, i := range vl {
 			vlp = append(vlp, fmt.Sprintf("***%s***", i))
 		}
-		return fmt.Errorf(msgMissingLabels, strings.Join(vlp, ", "))
+		reasons = append(reasons, fmt.Sprintf(msgMissingLabels, strings.Join(vlp, ", ")))
 	}
-
-	return nil
+	return reasons
 }
 
 func checkLabelsLegal(configmap *repoConfig, ops []client.PullRequestOperationLog, labels sets.Set[string]) error {
+	reason := make([]string, 0, len(labels))
 	needs := sets.New[string](approvedLabel)
 	needs.Insert(configmap.LabelsForMerge...)
 	if ln := configmap.LgtmCountsRequired; ln == 1 {
 		needs.Insert(lgtmLabel)
 	} else {
-		v := getLGTMLabelsOnPR(labels)
-		if n := uint(len(v)); n < ln {
-			return fmt.Errorf(msgNotEnoughLGTMLabel, ln, n)
-		}
+		needs.Insert(getLGTMLabelsOnPR(labels)...)
 	}
 	legalOperator := configmap.LegalOperator
-	reason := make([]string, 0, len(labels))
 	for label := range labels {
-		if ok := needs.Has(label); ok || strings.HasPrefix(label, lgtmLabel) {
+		if ok := needs.Has(label); ok {
 			if s := isLabelLegal(ops, label, legalOperator); s != "" {
 				reason = append(reason, s)
 			}

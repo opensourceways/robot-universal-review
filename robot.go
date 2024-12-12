@@ -15,6 +15,7 @@ package main
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/opensourceways/robot-framework-lib/client"
 	"github.com/opensourceways/robot-framework-lib/config"
@@ -115,25 +116,27 @@ func (bot *robot) handlePullRequestCommentEvent(evt *client.GenericEvent, cnf co
 		logger.WithError(err).Warning()
 		return
 	}
+	lines := strings.Split(comment, "\n")
+	for _, line := range lines {
+		if err := bot.handleRebase(line, commenter, org, repo, number); err != nil {
+			logger.WithError(err).Warning()
+		}
 
-	if err := bot.handleRebase(comment, commenter, org, repo, number); err != nil {
-		logger.WithError(err).Warning()
-	}
+		if err := bot.handledSquash(line, commenter, org, repo, number); err != nil {
+			logger.WithError(err).Warning()
+		}
 
-	if err := bot.handledSquash(comment, commenter, org, repo, number); err != nil {
-		logger.WithError(err).Warning()
-	}
+		if err := bot.handleLGTM(repoCnf, line, commenter, author, org, repo, number); err != nil {
+			logger.WithError(err).Warning()
+		}
 
-	if err := bot.handleLGTM(repoCnf, comment, commenter, author, org, repo, number); err != nil {
-		logger.WithError(err).Warning()
-	}
+		if err := bot.handleApprove(repoCnf, line, commenter, author, org, repo, number); err != nil {
+			logger.WithError(err).Warning()
+		}
 
-	if err := bot.handleApprove(repoCnf, comment, commenter, author, org, repo, number); err != nil {
-		logger.WithError(err).Warning()
-	}
-
-	if err := bot.handleCheckPR(evt, repoCnf, org, repo, number); err != nil {
-		logger.WithError(err).Warning()
+		if err := bot.handleCheckPR(repoCnf, line, org, repo, number); err != nil {
+			logger.WithError(err).Warning()
+		}
 	}
 
 }

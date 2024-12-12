@@ -15,7 +15,6 @@ var (
 )
 
 func (bot *robot) handleApprove(configmap *repoConfig, comment, commenter, author, org, repo, number string) error {
-	logrus.Infof("handleApprove, comment: %s, commenter: %s, author: %s, org: %s, repo: %s, number: %s", comment, commenter, author, org, repo, number)
 	if regAddApprove.MatchString(comment) {
 		return bot.AddApprove(commenter, author, org, repo, number, configmap.LgtmCountsRequired)
 	}
