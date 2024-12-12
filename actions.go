@@ -93,12 +93,23 @@ func (bot *robot) genMergeMethod(org, repo, number string) string {
 	return mergeMethod
 }
 
-func (bot *robot) handleCheckPR(configmap *repoConfig, comment, org, repo, number string) error {
+func (bot *robot) handleCheckPR(configmap *repoConfig, comment, commenter, org, repo, number string) error {
 	if !regCheckPr.MatchString(comment) {
 		return nil
 	}
 	if err := bot.handleMerge(configmap, org, repo, number); err != nil {
-		bot.cli.CreatePRComment(org, repo, number, err.Error())
+		comment := fmt.Sprintf("@%s, this pr is not mergeable and the reasons are below:\n%s\n\n***lgtm***: "+
+			"A label mandatory for merging a pull request. The repository collaborators can comment '/lgtm' to "+
+			"add the label. The creator of a pull request can comment '/lgtm cancel' to remove the label, but "+
+			"cannot run the '/lgtm' command to add the label.\n***approved***: A label mandatory for merging a "+
+			"pull request. The repository collaborators can comment '/approve' to add the label and comment "+
+			"'/approve cancel' to remove the label.\n***wait_confirm***: A label for confirming pull request "+
+			"merging. A pull request with this label cannot be automatically merged. This label is added because "+
+			"members (including maintainers, committers, and repository administrators) are to be added to "+
+			"sig-info.yaml in the pull request. To remove the label, all members to be added must comment "+
+			"'/lgtm' in the pull request.",
+			commenter, err.Error())
+		bot.cli.CreatePRComment(org, repo, number, comment)
 		return err
 	}
 	return nil

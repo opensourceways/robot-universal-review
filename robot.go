@@ -134,7 +134,7 @@ func (bot *robot) handlePullRequestCommentEvent(evt *client.GenericEvent, cnf co
 			logger.WithError(err).Warning()
 		}
 
-		if err := bot.handleCheckPR(repoCnf, line, org, repo, number); err != nil {
+		if err := bot.handleCheckPR(repoCnf, line, commenter, org, repo, number); err != nil {
 			logger.WithError(err).Warning()
 		}
 	}
