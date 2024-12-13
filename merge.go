@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/opensourceways/robot-framework-lib/client"
-	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -105,7 +104,6 @@ func checkLabelsLegal(configmap *repoConfig, ops []client.PullRequestOperationLo
 func isLabelLegal(ops []client.PullRequestOperationLog, label string, legalOperator string) string {
 	labelLog, ok := getLatestLog(ops, label)
 	if !ok {
-		logrus.Errorf("=== label: %s", label)
 		return fmt.Sprintf("The corresponding operation log is missing. you should delete "+
 			"the label **%s** and add it again by correct way", label)
 	}
@@ -122,7 +120,6 @@ func getLatestLog(ops []client.PullRequestOperationLog, label string) (labelLog,
 
 	for i := range ops {
 		op := &ops[i]
-		logrus.Infof("===>op: %+v", op)
 		if !strings.HasPrefix(op.Content, ActionAddLabel) || !strings.Contains(op.Content, label) {
 			continue
 		}
@@ -135,7 +132,6 @@ func getLatestLog(ops []client.PullRequestOperationLog, label string) (labelLog,
 
 	if index >= 0 {
 		if user := ops[index].UserName; user != "" {
-			logrus.Infof("<===user add: %s %s", ops[index].Content, user)
 			return labelLog{
 				label: label,
 				t:     t,
