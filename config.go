@@ -25,6 +25,10 @@ type configuration struct {
 	ConfigItems          []repoConfig `json:"config_items,omitempty"`
 	UserMarkFormat       string       `json:"user_mark_format,omitempty"`
 	PlaceholderCommenter string       `json:"placeholder_commenter"`
+	// Sig information url.
+	SigInfoURL string `json:"sig_info_url" required:"true"`
+	// Community name used as a request parameter to getRepoConfig sig information.
+	CommunityName string `json:"community_name" required:"true"`
 }
 
 // Validate to check the configmap data's validation, returns an error if invalid
