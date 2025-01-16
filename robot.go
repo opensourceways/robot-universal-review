@@ -31,10 +31,7 @@ type iClient interface {
 
 	AddPRLabels(org, repo, number string, labels []string) (success bool)
 	RemovePRLabels(org, repo, number string, labels []string) (success bool)
-	GetPullRequestCommits(org, repo, number string) (result []client.PRCommit, success bool)
 	ListPullRequestComments(org, repo, number string) (result []client.PRComment, success bool)
-	DeletePRComment(org, repo, commentID string) (success bool)
-	CheckCLASignature(urlStr string) (signState string, success bool)
 	CheckIfPRCreateEvent(evt *client.GenericEvent) (yes bool)
 	CheckIfPRSourceCodeUpdateEvent(evt *client.GenericEvent) (yes bool)
 	CheckPermission(org, repo, username string) (pass, success bool)
